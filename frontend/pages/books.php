@@ -1,7 +1,7 @@
 <div class="row voffset5">
     <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2"></div>
     <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
-        <form role="form" id="bookAdd">
+        <form role="form" id="bookAdd" method="post" action="http://localhost/Bookstore/rest/rest.php/book/">
             <legend>Add book</legend>
 
             <div class="form-group">
