@@ -122,57 +122,62 @@ var selectToEdit = $('#bookEditSelect');
 selectToEdit.on('click', 'option', function(){
     id = $(this).attr('value');
 
+
     //if we don't choose book the form will be hidden
     if(id !== ''){
         formToEdit.css('display', 'block');
+
+        // add title and description of book to form
+        $.ajax({
+            url: 'http://localhost/Bookstore/rest/rest.php/book/'+id,
+            method: 'GET'
+        }).done(function (data){
+            titleEditForm.val(data.success[0].title);
+            descriptionEditForm.val(data.success[0].description);
+        }).fail(function(err){
+            console.log(err);
+        });
+
+        // save changed title and description to db, booklist and option in select
+        submit.on('click', function(event){
+            event.preventDefault();
+
+            var changedTitle = titleEditForm.val();
+            var changedDescription = descriptionEditForm.val();
+
+            var objBook ={
+                title: changedTitle,
+                description: changedDescription
+            };
+
+            // all elements which need to be update
+            var spanWithTitle = $('button[data-id='+id+']').eq(0).prev();
+            var divWithDescription = $('button[data-id='+id+']').parent().next();
+            var optionWithTitle = $('option[value='+id+']');
+
+            $.ajax({
+                url: 'http://localhost/Bookstore/rest/rest.php/book/'+id,
+                method: 'PATCH',
+                data: objBook,
+                contentType: "application/json",
+                dataType: "json"
+            }).done(function(data){
+                spanWithTitle.text(data.success[0].title);
+                optionWithTitle.text(data.success[0].title);
+                divWithDescription.text(data.success[0].description);
+
+                formToEdit.css('display', 'none');
+                selectToEdit.val('');
+                id = '';
+            }).fail(function (err){
+                console.log(err);
+            });
+        });
+
     }else{
         formToEdit.css('display', 'none');
     }
 
-    // add title and description of book to form
-    $.ajax({
-        url: 'http://localhost/Bookstore/rest/rest.php/book/'+id,
-        method: 'GET'
-    }).done(function (data){
-        titleEditForm.val(data.success[0].title);
-        descriptionEditForm.val(data.success[0].description);
-    }).fail(function(err){
-        console.log(err);
-    });
 
-    // save changed title and description to db, booklist and option in select
-    submit.on('click', function(event){
-        event.preventDefault();
 
-        var changedTitle = titleEditForm.val();
-        var changedDescription = descriptionEditForm.val();
-
-        var objBook ={
-            title: changedTitle,
-            description: changedDescription
-        };
-
-        // all elements which need to be update
-        var spanWithTitle = $('button[data-id='+id+']').eq(0).prev();
-        var divWithDescription = $('button[data-id='+id+']').parent().next();
-        var optionWithTitle = $('option[value='+id+']');
-
-        $.ajax({
-            url: 'http://localhost/Bookstore/rest/rest.php/book/'+id,
-            method: 'PATCH',
-            data: objBook,
-            contentType: "application/json",
-            dataType: "json"
-        }).done(function(data){
-            spanWithTitle.text(data.success[0].title);
-            optionWithTitle.text(data.success[0].title);
-            divWithDescription.text(data.success[0].description);
-
-            formToEdit.css('display', 'none');
-            selectToEdit.val('');
-            id = '';
-        }).fail(function (err){
-            console.log(err);
-        });
-    });
 });
