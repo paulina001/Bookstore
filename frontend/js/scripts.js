@@ -12,7 +12,4 @@ function showModal(msg) {
     modalBody.html(msg);
 
     modal.modal('show');
-
-
-
 }

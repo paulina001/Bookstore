@@ -11,6 +11,7 @@
         $book = new Book($conn);
         $book->setTitle($postVars['title']);
         $book->setDescription($postVars['description']);
+        $book->setAuthorId($postVars['author_id']);
 
         $book->save();
 
@@ -20,6 +21,7 @@
         $bookToEdit = Book::loadAll($conn, $pathId)[0];
         $bookToEdit->setTitle($patchVars['title']);
         $bookToEdit->setDescription($patchVars['description']);
+        $bookToEdit->setAuthorId($patchVars['author_id']);
 
         $bookToEdit->save();
 
@@ -33,3 +35,4 @@
     } else {
         $response = ['error' => 'Wrong request method'];
     }
+
