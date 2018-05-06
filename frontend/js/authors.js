@@ -8,23 +8,30 @@ function addAuthor(data) {
                         <div class="panel panel-default">
                             <div class="panel-heading"><span class="authorTitle">${data.success[i].name} ${data.success[i].surname}</span>
                                 <button data-id="${data.success[i].id}" class="btn btn-danger pull-right btn-xs btn-author-remove"><i class="fa fa-trash"></i></button>
+                                <button data-id="${data.success[i].id}" class="btn btn-primary pull-right btn-xs btn-author-books"><i class="fa fa-book"></i></button>
                             </div>
+                            <ul class="authorBooksList"></ul>
                         </div>
                     </li>
             `);
-
         $('#authorsList').append(newAuthor);
+
+        //add all author's books to his own booklist
+        if(data.success[i].books){
+            for(var j = 0; j < data.success[i].books.length; j++){
+                var newBook = $(`<li>${data.success[i].books[j].title}</li>`);
+
+                $('.btn-author-books[data-id = '+ data.success[i].id +']').parent().next().append(newBook);
+            }
+        }
     }
 }
 
 // function to add all authors to select
 function addAuthorToSelect(data){
-
     for( var i = 0; i < data.success.length; i++) {
 
-        var newElement = $(`
-        <option value="${data.success[i].id}">${data.success[i].name} ${data.success[i].surname}</option>
-        `);
+        var newElement = $(` <option value="${data.success[i].id}">${data.success[i].name} ${data.success[i].surname}</option> `);
 
         $('#authorEditSelect').append(newElement);
     }
@@ -62,7 +69,6 @@ form.on('submit', function (event){
             contentType: "application/jason",
             dataType: "json"
         }).done(function (data){
-            // console.log(data.success);
             addAuthor(data);
             addAuthorToSelect(data);
 
@@ -72,7 +78,7 @@ form.on('submit', function (event){
             console.log(err);
         });
 
-    };
+    }
 });
 
 // delete author from database, select and authorslist
@@ -142,10 +148,10 @@ authorEditSelect.on('change', function (){
                dataType: 'json',
                contentType: 'application/jason'
            }).done(function (data){
-               authorEditForm.css('display', 'none');
                spanWithAuthor.text(data.success[0].name + " " + data.success[0].surname);
                optionWithAuthor.text(data.success[0].name + " " + data.success[0].surname);
 
+               authorEditForm.css('display', 'none');
                authorEditSelect.val('');
                authorEditName.val('');
                authorEditSurname.val('');
@@ -159,6 +165,15 @@ authorEditSelect.on('change', function (){
        authorEditForm.css('display', 'none');
    }
 });
+
+
+// show all author's books
+authorList.on('click', 'button.btn-author-books', function(){
+
+    var authorBooksList = $(this).parent().next();
+    authorBooksList.slideToggle();
+});
+
 
 
 

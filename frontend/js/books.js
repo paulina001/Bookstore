@@ -7,7 +7,7 @@ function showBooks(data){
                                     <li class="list-group-item">
                                         <div class="panel panel-default">
                                             <div class="panel-heading">
-                                                <span class="bookTitle">${data.success[i].title}</span>
+                                                <span class="bookTitle">${data.success[i].title} (${data.success[i].author.name+' '+ data.success[i].author.surname })</span>
                                                 <button data-id="${data.success[i].id}"
                                                         class="btn btn-danger pull-right btn-xs btn-book-remove"><i
                                                         class="fa fa-trash"></i>
@@ -31,7 +31,7 @@ function showBooks(data){
 function addBookToSelect(data){
     for(var i = 0; i < data.success.length; i++){
 
-        var newElement = (`<option value="${data.success[i].id}">${data.success[i].title}</option>`);
+        var newElement = $(`<option value="${data.success[i].id}">${data.success[i].title}</option>`);
         $('#bookEditSelect').append(newElement);
     }
 }
@@ -55,11 +55,13 @@ form.on('submit', function (event) {
 
     var title = $('#title').val();
     var description = $('#description').val();
+    var idAuthor = $('#author_id option:selected').attr('value');
 
     if(title !=='' && description !== ''){
         var objBook = {
             title : title,
-            description: description
+            description: description,
+            author_id: idAuthor
         };
 
         $.ajax({
@@ -71,6 +73,7 @@ form.on('submit', function (event) {
         }).done(function(data) {
             $('#title').val('');
             $('#description').val('');
+            $('#author_id').val('');
             showBooks(data);
             addBookToSelect(data);
         }).fail(function (err) {
@@ -104,9 +107,8 @@ list.on('click', 'button.btn-danger', function(){
     }).done( function (data){
         $(bookToRemove).remove();
         $(optionToRemove).remove();
-        console.log('Książka została usunięta');
     }).fail(function (err){
-        console.log('Nie udało się usunąć książki');
+        console.log(err);
     });
 });
 
@@ -114,26 +116,27 @@ list.on('click', 'button.btn-danger', function(){
 var formToEdit = $('#bookEdit');
 var titleEditForm= formToEdit.find('#title');
 var descriptionEditForm = formToEdit.find('#description');
+var authorInEdit = $('#author_id_edit');
 var submit = formToEdit.children().last();
 
 // edit book
 var id;
 var selectToEdit = $('#bookEditSelect');
-selectToEdit.on('click', 'option', function(){
-    id = $(this).attr('value');
-
+selectToEdit.on('change', function(){
+    id= $('#bookEditSelect option:selected').attr('value');
 
     //if we don't choose book the form will be hidden
     if(id !== ''){
         formToEdit.css('display', 'block');
 
-        // add title and description of book to form
+        // add title, description and author of book to form
         $.ajax({
             url: 'http://localhost/Bookstore/rest/rest.php/book/'+id,
             method: 'GET'
         }).done(function (data){
             titleEditForm.val(data.success[0].title);
             descriptionEditForm.val(data.success[0].description);
+            authorInEdit.val(data.success[0].author_id);
         }).fail(function(err){
             console.log(err);
         });
@@ -144,10 +147,12 @@ selectToEdit.on('click', 'option', function(){
 
             var changedTitle = titleEditForm.val();
             var changedDescription = descriptionEditForm.val();
+            var changedIdAuthor = $('#author_id_edit option:selected').attr('value');
 
             var objBook ={
                 title: changedTitle,
-                description: changedDescription
+                description: changedDescription,
+                author_id: changedIdAuthor
             };
 
             // all elements which need to be update
@@ -162,7 +167,7 @@ selectToEdit.on('click', 'option', function(){
                 contentType: "application/json",
                 dataType: "json"
             }).done(function(data){
-                spanWithTitle.text(data.success[0].title);
+                spanWithTitle.text(data.success[0].title +' ('+ data.success[0].author.name+' '+ data.success[0].author.surname + ') ');
                 optionWithTitle.text(data.success[0].title);
                 divWithDescription.text(data.success[0].description);
 
@@ -177,7 +182,31 @@ selectToEdit.on('click', 'option', function(){
     }else{
         formToEdit.css('display', 'none');
     }
-
-
-
 });
+
+// function add all authors to select
+function addAuthorsToSelect(data){
+    for( var i = 0; i < data.success.length; i++){
+
+        var newElement = (` <option value="${data.success[i].id}"> ${data.success[i].name} ${data.success[i].surname}</option>`);
+
+        $('#author_id').append(newElement);
+        $('#author_id_edit').append(newElement);
+    }
+}
+
+// add all authors to select in add book form and select in edit book form
+$.ajax({
+    url: 'http://localhost/Bookstore/rest/rest.php/author/',
+    method: 'GET'
+}).done(function (data){
+    addAuthorsToSelect(data);
+}).fail(function (err){
+    console.log(err)
+});
+
+
+
+
+
+
